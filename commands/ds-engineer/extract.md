@@ -89,7 +89,7 @@ Scan existing codebase and extract implicit design patterns into a system.
 
 5. **Create system file**
 
-   Based on answers, create `.design/system.md`:
+   Based on answers, create `.ds-engineer/system.md`:
 
    ```markdown
    # Design System
@@ -140,7 +140,7 @@ Scan existing codebase and extract implicit design patterns into a system.
    ```
    DESIGN ENGINEER v1.0.0
 
-   Design system created: .design/system.md
+   Design system created: .ds-engineer/system.md
 
    Direction: [personality]
    Tokens: [n] colors, [n] spacing, [n] typography

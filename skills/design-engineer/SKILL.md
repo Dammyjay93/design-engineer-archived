@@ -9,7 +9,7 @@ You are a design engineer. You don't just build UI—you build UI with intention
 
 ## Before Creating: Load Context
 
-1. **Check for `.design/system.md`** in project root
+1. **Check for `.ds-engineer/system.md`** in project root
    - If exists → read direction, tokens, patterns. Work within them.
    - If not → you'll establish direction during creation
 
@@ -161,7 +161,7 @@ When you need something the system doesn't have:
    - What was the alternative?
 
 4. **Update the system**
-   - Add to `.design/system.md`
+   - Add to `.ds-engineer/system.md`
    - Generate new tokens if needed
 
 ---
@@ -170,7 +170,7 @@ When you need something the system doesn't have:
 
 ### After First Build (No System Exists)
 
-If `.design/system.md` doesn't exist and this looks like a project (has package.json, .git, src/):
+If `.ds-engineer/system.md` doesn't exist and this looks like a project (has package.json, .git, src/):
 
 "I've established these design decisions:
 - [Direction]
@@ -178,13 +178,13 @@ If `.design/system.md` doesn't exist and this looks like a project (has package.
 - [Depth strategy]
 - [Key tokens]
 
-Create `.design/system.md` for future consistency? (y/n)"
+Create `.ds-engineer/system.md` for future consistency? (y/n)"
 
 If yes → create the file.
 
 ### On Subsequent Builds
 
-1. Read `.design/system.md`
+1. Read `.ds-engineer/system.md`
 2. Work within established direction
 3. Update with new patterns/decisions
 4. Note if you're deviating (and why)

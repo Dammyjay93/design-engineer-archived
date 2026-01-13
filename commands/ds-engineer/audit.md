@@ -15,8 +15,8 @@ $ARGUMENTS — Path to audit (file or directory)
 ## Steps
 
 1. **Load design system**
-   - Read `.design/system.md`
-   - If not found: "No design system. Run /design extract first."
+   - Read `.ds-engineer/system.md`
+   - If not found: "No design system. Run /ds-engineer extract first."
 
 2. **Scan target files**
    - If directory, find all UI files (.tsx, .jsx, .css, .scss, .vue, .svelte)

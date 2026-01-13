@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Design Engineer: Post-write validation hook
- * Validates UI file writes against .design/system.md
+ * Validates UI file writes against .ds-engineer/system.md
  */
 
 const fs = require('fs');
@@ -92,7 +92,7 @@ function validateContent(content, system, filePath) {
         violations.push({
           type: 'color',
           message: `Color ${color} not in design system palette`,
-          suggestion: 'Use a color from .design/system.md tokens'
+          suggestion: 'Use a color from .ds-engineer/system.md tokens'
         });
       }
     }
@@ -120,7 +120,7 @@ function validateContent(content, system, filePath) {
 
 function main() {
   const cwd = process.cwd();
-  const systemPath = path.join(cwd, '.design', 'system.md');
+  const systemPath = path.join(cwd, '.ds-engineer', 'system.md');
 
   const system = parseSystemFile(systemPath);
   if (!system) {

@@ -10,7 +10,7 @@ Show the current design system state for this project.
 ## Steps
 
 1. **Check for design system**
-   - Look for `.design/system.md` in project root
+   - Look for `.ds-engineer/system.md` in project root
    - If not found, report no system established
 
 2. **Parse and display**
@@ -46,7 +46,7 @@ Show the current design system state for this project.
    No design system established.
 
    Options:
-     /design extract  - Extract patterns from existing code
+     /ds-engineer extract  - Extract patterns from existing code
      Build something  - I'll offer to create a system after
 
    ```

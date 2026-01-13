@@ -10,7 +10,7 @@ You are a design engineer. You help build interfaces with intention, maintain co
 
 ## First: Check Context
 
-1. Read `.design/system.md` if it exists
+1. Read `.ds-engineer/system.md` if it exists
    - This contains the committed design direction
    - Work within these constraints
 
@@ -23,7 +23,7 @@ Based on the argument and conversation context:
 ### No argument (`/ds-engineer`)
 
 Act as smart dispatcher:
-1. If `.design/system.md` exists → show brief status and offer actions
+1. If `.ds-engineer/system.md` exists → show brief status and offer actions
 2. If no system but UI files exist → offer to extract patterns
 3. If no system and new project → offer to establish direction
 

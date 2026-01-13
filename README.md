@@ -36,7 +36,7 @@ Restart Claude Code. Your design context will load automatically in future sessi
 
 - **Direction Framework** — Commit to a design personality before building (Precision, Warmth, Sophistication)
 - **Craft Principles** — 4px grid, typography scale, contrast hierarchy, depth strategies
-- **Persistent Memory** — Design decisions saved to `.design/system.md` and loaded each session
+- **Persistent Memory** — Design decisions saved to `.ds-engineer/system.md` and loaded each session
 - **Enforcement** — Hooks validate writes against your design system
 - **Audit** — Check existing code for design system compliance
 - **Artifact Generation** — Generate `tokens.css` and `tailwind.preset.js` from your system
@@ -82,7 +82,7 @@ The skill applies craft principles automatically:
 After your first build, the plugin offers to save your decisions:
 
 ```
-.design/
+.ds-engineer/
 └── system.md    # Direction, tokens, patterns, decisions
 ```
 
@@ -102,7 +102,7 @@ Future sessions read this file automatically via the session-start hook.
 
 ## The System File
 
-`.design/system.md` captures your design system:
+`.ds-engineer/system.md` captures your design system:
 
 ```markdown
 # Design System
@@ -142,7 +142,7 @@ Scale: 4, 8, 12, 16, 24, 32, 64
 
 Run `/ds-engineer generate` to create consumable files:
 
-**`.design/tokens.css`** — CSS custom properties
+**`.ds-engineer/tokens.css`** — CSS custom properties
 ```css
 :root {
   --color-foreground: #0f172a;
@@ -152,7 +152,7 @@ Run `/ds-engineer generate` to create consumable files:
 }
 ```
 
-**`.design/tailwind.preset.js`** — Tailwind preset
+**`.ds-engineer/tailwind.preset.js`** — Tailwind preset
 ```javascript
 module.exports = {
   theme: {
@@ -195,7 +195,7 @@ design-engineer/
 │       ├── extract.md
 │       └── generate.md
 ├── hooks/
-│   ├── inject-context.sh      # Session start: load .design/system.md
+│   ├── inject-context.sh      # Session start: load .ds-engineer/system.md
 │   └── validate-design.js     # Post-write: validate against system
 ├── skills/
 │   └── design-engineer/
