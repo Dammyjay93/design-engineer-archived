@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 /**
  * Design Engineer: Post-write validation hook
- * Validates UI file writes against .ds-engineer/system.md
+ * Validates UI file writes against YOUR .ds-engineer/system.md
+ *
+ * Only enforces what you've defined. No system = no enforcement.
  */
 
 const fs = require('fs');
@@ -14,41 +16,69 @@ function parseSystemFile(systemPath) {
 
   const content = fs.readFileSync(systemPath, 'utf-8');
   const system = {
-    depth: 'unknown',
+    depth: null,
     colors: [],
-    spacingBase: 4
+    spacingBase: null,
+    spacingScale: [],
+    radiusScale: []
   };
 
-  // Parse depth strategy
-  if (content.includes('Depth: Borders-only') || content.includes('borders-only')) {
+  // Parse depth strategy (only if explicitly defined)
+  if (content.includes('Depth: Borders-only') || content.includes('depth: borders-only')) {
     system.depth = 'borders-only';
-  } else if (content.includes('Depth: Subtle') || content.includes('subtle shadows')) {
+  } else if (content.includes('Depth: Subtle') || content.includes('depth: subtle')) {
     system.depth = 'subtle-shadows';
-  } else if (content.includes('Depth: Layered') || content.includes('layered shadows')) {
+  } else if (content.includes('Depth: Layered') || content.includes('depth: layered')) {
     system.depth = 'layered-shadows';
   }
 
+  // Parse spacing base (e.g., "Base: 4px" or "base: 8px")
+  const spacingBaseMatch = content.match(/(?:spacing\s+)?base:\s*(\d+)px/i);
+  if (spacingBaseMatch) {
+    system.spacingBase = parseInt(spacingBaseMatch[1]);
+  }
+
+  // Parse spacing scale (e.g., "Scale: 4, 8, 12, 16")
+  const spacingScaleMatch = content.match(/### Spacing[\s\S]*?Scale:\s*([\d,\s]+)/i);
+  if (spacingScaleMatch) {
+    system.spacingScale = spacingScaleMatch[1]
+      .split(',')
+      .map(s => parseInt(s.trim()))
+      .filter(n => !isNaN(n));
+  }
+
+  // Parse radius scale (e.g., "Scale: 4px, 6px, 8px")
+  const radiusScaleMatch = content.match(/### Radius[\s\S]*?Scale:\s*([\d\w,\s]+)/i);
+  if (radiusScaleMatch) {
+    system.radiusScale = radiusScaleMatch[1]
+      .match(/\d+/g)
+      ?.map(n => parseInt(n)) || [];
+  }
+
   // Extract hex colors from tokens section
-  const hexMatches = content.match(/#[0-9a-fA-F]{6}/g) || [];
-  system.colors = [...new Set(hexMatches.map(c => c.toLowerCase()))];
+  const tokensSection = content.match(/### Colors[\s\S]*?(?=###|## |$)/i);
+  if (tokensSection) {
+    const hexMatches = tokensSection[0].match(/#[0-9a-fA-F]{6}/g) || [];
+    system.colors = [...new Set(hexMatches.map(c => c.toLowerCase()))];
+  }
 
   return system;
 }
 
-function validateContent(content, system, filePath) {
+function validateContent(content, system) {
   const violations = [];
 
-  // Check for shadows when borders-only
+  // Only check shadows if depth strategy is explicitly borders-only
   if (system.depth === 'borders-only') {
     if (content.includes('box-shadow') && !content.includes('box-shadow: none')) {
-      // Allow ring shadows (0 0 0 Xpx) as they're border-like
       const shadowMatch = content.match(/box-shadow:\s*([^;]+)/g) || [];
       for (const shadow of shadowMatch) {
+        // Allow ring shadows (0 0 0 Xpx) as they're border-like
         if (!shadow.includes('0 0 0') && !shadow.includes('inset')) {
           violations.push({
             type: 'depth',
-            message: 'Shadow detected but system uses borders-only depth strategy',
-            suggestion: 'Use border instead: border: 0.5px solid rgba(0,0,0,0.08)'
+            message: 'Shadow detected but your system uses borders-only depth',
+            suggestion: 'Use border instead, or update your depth strategy in system.md'
           });
           break;
         }
@@ -59,29 +89,32 @@ function validateContent(content, system, filePath) {
     if (/\bshadow-(sm|md|lg|xl|2xl)\b/.test(content)) {
       violations.push({
         type: 'depth',
-        message: 'Tailwind shadow class used but system is borders-only',
-        suggestion: 'Use border classes instead'
+        message: 'Tailwind shadow class used but your system is borders-only',
+        suggestion: 'Use border classes instead, or update your depth strategy'
       });
     }
   }
 
-  // Check spacing (px values not on 4px grid)
-  const pxMatches = content.matchAll(/[:\s](\d+)px/g);
-  const seenValues = new Set();
-  for (const match of pxMatches) {
-    const value = parseInt(match[1]);
-    // Allow 1px (borders), 0px, and values on 4px grid
-    if (value !== 0 && value !== 1 && value % 4 !== 0 && !seenValues.has(value)) {
-      seenValues.add(value);
-      violations.push({
-        type: 'spacing',
-        message: `${value}px is not on 4px grid`,
-        suggestion: `Use ${Math.round(value / 4) * 4}px instead`
-      });
+  // Only check spacing if a base is defined
+  if (system.spacingBase) {
+    const pxMatches = content.matchAll(/[:\s](\d+)px/g);
+    const seenValues = new Set();
+    for (const match of pxMatches) {
+      const value = parseInt(match[1]);
+      // Allow 0px, 1px (borders), and values on the defined grid
+      if (value !== 0 && value !== 1 && value % system.spacingBase !== 0 && !seenValues.has(value)) {
+        seenValues.add(value);
+        const nearest = Math.round(value / system.spacingBase) * system.spacingBase;
+        violations.push({
+          type: 'spacing',
+          message: `${value}px is not on your ${system.spacingBase}px grid`,
+          suggestion: `Consider ${nearest}px, or update your spacing base in system.md`
+        });
+      }
     }
   }
 
-  // Check for hex colors not in system (if system has colors defined)
+  // Only check colors if palette is defined
   if (system.colors.length > 0) {
     const contentHexColors = content.match(/#[0-9a-fA-F]{6}/gi) || [];
     const seenColors = new Set();
@@ -91,28 +124,28 @@ function validateContent(content, system, filePath) {
         seenColors.add(lowerColor);
         violations.push({
           type: 'color',
-          message: `Color ${color} not in design system palette`,
-          suggestion: 'Use a color from .ds-engineer/system.md tokens'
+          message: `Color ${color} not in your defined palette`,
+          suggestion: 'Add to system.md colors, or use an existing token'
         });
       }
     }
   }
 
-  // Check for anti-patterns
-  if (/box-shadow:\s*[^;]*\b25px\b/.test(content)) {
-    violations.push({
-      type: 'anti-pattern',
-      message: 'Dramatic shadow detected (25px+)',
-      suggestion: 'Use subtle shadows: 0 1px 3px rgba(0,0,0,0.08)'
-    });
-  }
-
-  if (/border-radius:\s*(16|20|24|32)px/.test(content)) {
-    violations.push({
-      type: 'anti-pattern',
-      message: 'Large border radius detected (16px+)',
-      suggestion: 'Use system scale: 4px, 6px, or 8px for sharp; 8px, 12px for soft'
-    });
+  // Only check radius if scale is defined
+  if (system.radiusScale.length > 0) {
+    const radiusMatches = content.matchAll(/border-radius:\s*(\d+)px/gi);
+    const seenRadius = new Set();
+    for (const match of radiusMatches) {
+      const value = parseInt(match[1]);
+      if (!system.radiusScale.includes(value) && !seenRadius.has(value)) {
+        seenRadius.add(value);
+        violations.push({
+          type: 'radius',
+          message: `${value}px radius not in your scale (${system.radiusScale.join(', ')})`,
+          suggestion: 'Use a value from your scale, or update system.md'
+        });
+      }
+    }
   }
 
   return violations;
@@ -124,7 +157,7 @@ function main() {
 
   const system = parseSystemFile(systemPath);
   if (!system) {
-    // No design system, skip validation
+    // No design system defined, skip validation entirely
     process.exit(0);
   }
 
@@ -145,17 +178,19 @@ function main() {
   }
 
   const content = fs.readFileSync(targetFile, 'utf-8');
-  const violations = validateContent(content, system, targetFile);
+  const violations = validateContent(content, system);
 
   if (violations.length > 0) {
-    console.error('\n=== DESIGN SYSTEM VIOLATIONS ===\n');
+    console.error('\n=== DESIGN SYSTEM CHECK ===\n');
+    console.error('Found inconsistencies with your defined system:\n');
     for (const v of violations) {
       console.error(`  [${v.type}] ${v.message}`);
       console.error(`    -> ${v.suggestion}\n`);
     }
-    console.error('Fix these issues to maintain design consistency.\n');
-    console.error('================================\n');
-    process.exit(1); // Block the write
+    console.error('These are based on YOUR system.md definitions.');
+    console.error('Update system.md to change what gets checked.\n');
+    console.error('===========================\n');
+    process.exit(1);
   }
 
   process.exit(0);

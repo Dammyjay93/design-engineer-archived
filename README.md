@@ -12,12 +12,27 @@
 </p>
 
 <p align="center">
-  Craft · Direction · Memory · Enforcement
+  Intention · Consistency · Memory
 </p>
 
 <p align="center">
-  Build interfaces with intention. Maintain consistency across sessions. Catch drift before it compounds.
+  Make design decisions once. Have them remembered and enforced across sessions.
 </p>
+
+---
+
+## What This Does
+
+When you build UI with Claude, decisions get made — colors, spacing, depth, typography. Without structure, those decisions drift. You end up with 14px here, 16px there. Shadows on some cards, borders on others. Three different grays.
+
+This plugin helps you:
+
+1. **Think through decisions** — The skill prompts you to consider direction, not just defaults
+2. **Record what you chose** — Decisions save to `.ds-engineer/system.md`
+3. **Stay consistent** — Future sessions load your system automatically
+4. **Catch drift** — Hooks flag when new code contradicts your established patterns
+
+It's not a design system. It's a framework for building *your* design system and keeping it coherent.
 
 ---
 
@@ -32,14 +47,39 @@ Restart Claude Code. Your design context will load automatically in future sessi
 
 ---
 
-## Key Features
+## How It Works
 
-- **Direction Framework** — Commit to a design personality before building (Precision, Warmth, Sophistication)
-- **Craft Principles** — 4px grid, typography scale, contrast hierarchy, depth strategies
-- **Persistent Memory** — Design decisions saved to `.ds-engineer/system.md` and loaded each session
-- **Enforcement** — Hooks validate writes against your design system
-- **Audit** — Check existing code for design system compliance
-- **Artifact Generation** — Generate `tokens.css` and `tailwind.preset.js` from your system
+### The Skill
+
+When you build UI, the skill guides you through questions:
+
+- What kind of product is this? (affects density, tone)
+- Warm or cool foundation?
+- How should depth work? (borders, shadows, or both)
+- What's your spacing base?
+
+These aren't rules — they're decisions. You make them, the plugin remembers them.
+
+### The System File
+
+After your first build, the plugin offers to save your decisions:
+
+```
+.ds-engineer/
+├── system.md           # Your direction, tokens, patterns
+├── tokens.css          # Generated CSS (optional)
+└── tailwind.preset.js  # Generated preset (optional)
+```
+
+The system file is markdown. Edit it directly, or let the plugin update it as you work.
+
+### The Hooks
+
+**Session start** — Loads your system.md so Claude has context.
+
+**Post-write** — Validates UI code against your system. If you chose borders-only depth, it flags shadows. If you defined a color palette, it flags off-palette colors.
+
+The hooks only enforce what *you* defined. No system file = no enforcement.
 
 ---
 
@@ -49,60 +89,13 @@ Restart Claude Code. Your design context will load automatically in future sessi
 |---------|-------------|
 | `/ds-engineer` | Smart dispatcher — shows status or suggests actions |
 | `/ds-engineer status` | Show current design system state |
-| `/ds-engineer audit <path>` | Check code against design system |
-| `/ds-engineer extract` | Extract patterns from existing code into a system |
-| `/ds-engineer generate` | Generate tokens.css, tailwind.preset.js |
+| `/ds-engineer audit <path>` | Check existing code against your system |
+| `/ds-engineer extract` | Extract patterns from existing code |
+| `/ds-engineer generate` | Generate tokens.css, tailwind preset |
 
 ---
 
-## How It Works
-
-### 1. Direction
-
-Before building, commit to a design direction:
-
-| Product Type | Direction | Foundation | Depth |
-|--------------|-----------|------------|-------|
-| Developer tool | Precision & Density | Cool (slate) | Borders-only |
-| Consumer app | Warmth & Approachability | Warm (stone) | Subtle shadows |
-| Finance/Enterprise | Sophistication & Trust | Cool (slate) | Layered shadows |
-
-### 2. Craft
-
-The skill applies craft principles automatically:
-
-- **4px grid** — All spacing on 4, 8, 12, 16, 24, 32, 64
-- **Typography scale** — 12, 13, 14, 16, 18, 24, 32
-- **Contrast hierarchy** — Foreground → Secondary → Muted → Faint
-- **Depth strategy** — Borders-only, subtle shadows, or layered
-- **Animation** — 150ms micro, 200ms standard, 250ms larger
-
-### 3. Memory
-
-After your first build, the plugin offers to save your decisions:
-
-```
-.ds-engineer/
-└── system.md    # Direction, tokens, patterns, decisions
-```
-
-Future sessions read this file automatically via the session-start hook.
-
-### 4. Enforcement
-
-**Self-validation** — The skill checks its own output before finishing.
-
-**Post-write hook** — Validates UI file writes against your system:
-- Colors not in palette
-- Spacing off 4px grid
-- Shadows when system is borders-only
-- Anti-patterns (dramatic shadows, large radius)
-
----
-
-## The System File
-
-`.ds-engineer/system.md` captures your design system:
+## Example System File
 
 ```markdown
 # Design System
@@ -111,7 +104,6 @@ Future sessions read this file automatically via the session-start hook.
 Personality: Precision & Density
 Foundation: Cool (slate)
 Depth: Borders-only
-Accent: blue-600
 
 ## Tokens
 
@@ -119,12 +111,14 @@ Accent: blue-600
 --foreground: slate-900
 --secondary: slate-600
 --muted: slate-400
---faint: slate-200
 --accent: blue-600
 
 ### Spacing
 Base: 4px
-Scale: 4, 8, 12, 16, 24, 32, 64
+Scale: 4, 8, 12, 16, 24, 32
+
+### Radius
+Scale: 4px, 6px, 8px
 
 ## Patterns
 - Cards: 0.5px border, 6px radius, 16px padding
@@ -133,51 +127,19 @@ Scale: 4, 8, 12, 16, 24, 32, 64
 ## Decisions
 | Decision | Rationale | Date |
 |----------|-----------|------|
-| Borders over shadows | Technical feel for dev tool | 2026-01-12 |
+| Borders over shadows | Technical feel | 2026-01-13 |
 ```
+
+This is just an example. Your system will reflect *your* choices.
 
 ---
 
-## Generated Artifacts
+## What It Doesn't Do
 
-Run `/ds-engineer generate` to create consumable files:
-
-**`.ds-engineer/tokens.css`** — CSS custom properties
-```css
-:root {
-  --color-foreground: #0f172a;
-  --color-secondary: #475569;
-  --space-4: 16px;
-  /* ... */
-}
-```
-
-**`.ds-engineer/tailwind.preset.js`** — Tailwind preset
-```javascript
-module.exports = {
-  theme: {
-    extend: {
-      colors: {
-        foreground: 'var(--color-foreground)',
-        /* ... */
-      }
-    }
-  }
-}
-```
-
----
-
-## Anti-Patterns
-
-The skill avoids and catches:
-
-- Dramatic shadows (`0 25px 50px...`)
-- Large radius on small elements (16px+ on buttons)
-- Multiple accent colors
-- Off-grid spacing (14px, 18px)
-- Spring/bounce animations
-- Generic AI aesthetics (purple gradients, Inter everywhere)
+- **Impose a specific aesthetic** — The skill has defaults and suggestions, but you override them
+- **Require specific values** — If you want 5px spacing base or 20px radius, that's your system
+- **Block you from experimenting** — No system file = no enforcement. Delete it to start fresh.
+- **Replace design judgment** — It remembers decisions, it doesn't make them for you
 
 ---
 
@@ -195,11 +157,11 @@ design-engineer/
 │       ├── extract.md
 │       └── generate.md
 ├── hooks/
-│   ├── inject-context.sh      # Session start: load .ds-engineer/system.md
-│   └── validate-design.js     # Post-write: validate against system
+│   ├── inject-context.sh      # Load system on session start
+│   └── validate-design.js     # Validate against your system
 ├── skills/
 │   └── design-engineer/
-│       └── SKILL.md           # The craft principles + creative layer
+│       └── SKILL.md           # Craft guidance + decision framework
 └── reference/
     ├── principles.md
     └── anti-patterns.md
@@ -209,13 +171,11 @@ design-engineer/
 
 ## Philosophy
 
-**Craft quality** — Every interface should look designed by a team that obsesses over 1-pixel differences.
+**Decisions compound.** A spacing value chosen once becomes a pattern. A depth strategy becomes an identity. This plugin makes those decisions visible and durable.
 
-**System thinking** — Every decision compounds. Build patterns, not one-offs.
+**Consistency beats perfection.** A coherent system with "imperfect" values beats a scattered interface with "correct" ones.
 
-**Memory** — What you decide today should inform tomorrow's work.
-
-**Enforcement** — Structure without enforcement is just documentation.
+**Memory enables iteration.** When you can see what you decided and why, you can evolve it intentionally instead of drifting accidentally.
 
 ---
 
