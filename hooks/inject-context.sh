@@ -1,7 +1,7 @@
 #!/bin/bash
 # Design Engineer: Inject design context at session start
 
-DESIGN_FILE=".ds-engineer/system.md"
+DESIGN_FILE=".design-engineer/system.md"
 
 if [ ! -f "$DESIGN_FILE" ]; then
     exit 0

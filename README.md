@@ -28,7 +28,7 @@ When you build UI with Claude, decisions get made — colors, spacing, depth, ty
 This plugin helps you:
 
 1. **Think through decisions** — The skill prompts you to consider direction, not just defaults
-2. **Record what you chose** — Decisions save to `.ds-engineer/system.md`
+2. **Record what you chose** — Decisions save to `.design-engineer/system.md`
 3. **Stay consistent** — Future sessions load your system automatically
 4. **Catch drift** — Hooks flag when new code contradicts your established patterns
 
@@ -65,7 +65,7 @@ These aren't rules — they're decisions. You make them, the plugin remembers th
 After your first build, the plugin offers to save your decisions:
 
 ```
-.ds-engineer/
+.design-engineer/
 ├── system.md           # Your direction, tokens, patterns
 ├── tokens.css          # Generated CSS (optional)
 └── tailwind.preset.js  # Generated preset (optional)
@@ -87,11 +87,11 @@ The hooks only enforce what *you* defined. No system file = no enforcement.
 
 | Command | Description |
 |---------|-------------|
-| `/ds-engineer` | Smart dispatcher — shows status or suggests actions |
-| `/ds-engineer status` | Show current design system state |
-| `/ds-engineer audit <path>` | Check existing code against your system |
-| `/ds-engineer extract` | Extract patterns from existing code |
-| `/ds-engineer generate` | Generate tokens.css, tailwind preset |
+| `/design-engineer` | Smart dispatcher — shows status or suggests actions |
+| `/design-engineer status` | Show current design system state |
+| `/design-engineer audit <path>` | Check existing code against your system |
+| `/design-engineer extract` | Extract patterns from existing code |
+| `/design-engineer generate` | Generate tokens.css, tailwind preset |
 
 ---
 
@@ -150,13 +150,14 @@ design-engineer/
 ├── .claude-plugin/
 │   └── plugin.json
 ├── commands/
-│   ├── ds-engineer.md         # Smart dispatcher
-│   └── ds-engineer/
+│   ├── design-engineer.md     # Smart dispatcher
+│   └── design-engineer/
 │       ├── status.md
 │       ├── audit.md
 │       ├── extract.md
 │       └── generate.md
 ├── hooks/
+│   ├── hooks.json             # Hook configuration
 │   ├── inject-context.sh      # Load system on session start
 │   └── validate-design.js     # Validate against your system
 ├── skills/

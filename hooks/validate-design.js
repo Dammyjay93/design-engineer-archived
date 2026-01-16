@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Design Engineer: Post-write validation hook
- * Validates UI file writes against YOUR .ds-engineer/system.md
+ * Validates UI file writes against YOUR .design-engineer/system.md
  *
  * Only enforces what you've defined. No system = no enforcement.
  */
@@ -151,9 +151,9 @@ function validateContent(content, system) {
   return violations;
 }
 
-function main() {
+async function main() {
   const cwd = process.cwd();
-  const systemPath = path.join(cwd, '.ds-engineer', 'system.md');
+  const systemPath = path.join(cwd, '.design-engineer', 'system.md');
 
   const system = parseSystemFile(systemPath);
   if (!system) {
@@ -161,8 +161,21 @@ function main() {
     process.exit(0);
   }
 
-  // Get the file that was written (passed as argument)
-  const targetFile = process.argv[2];
+  // Read hook input from stdin (JSON format from Claude Code)
+  let input = '';
+  for await (const chunk of process.stdin) {
+    input += chunk;
+  }
+
+  let targetFile;
+  try {
+    const hookData = JSON.parse(input);
+    targetFile = hookData.tool_input?.file_path;
+  } catch {
+    // If not JSON, skip validation
+    process.exit(0);
+  }
+
   if (!targetFile) {
     process.exit(0);
   }
@@ -190,7 +203,7 @@ function main() {
     console.error('These are based on YOUR system.md definitions.');
     console.error('Update system.md to change what gets checked.\n');
     console.error('===========================\n');
-    process.exit(1);
+    process.exit(2); // Exit 2 feeds stderr back to Claude
   }
 
   process.exit(0);
